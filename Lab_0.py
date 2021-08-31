@@ -114,5 +114,23 @@ result = []
         for elem in expr2:
             result.append(elem)
         return Product(result)
+
     
-    
+-----------------------
+# Built-in data types #
+-----------------------    
+
+# remove_from_string that takes in 1) a string to copy, and 2) a string of letters to be removed. 
+
+-----------------------------------------------------------
+
+def remove_from_string(string, letters):
+    return ''.join([c for c in string if c not in letters])
+
+print(remove_from_string("6.034", "46"))
+
+
+# tally_letters takes in a string of lowercase letters and returns a dictionary mapping each letter to the number of times it occurs in the string
+
+--------------------------------------------------------------------------------------------------------------------------------------------------
+
