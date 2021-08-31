@@ -60,3 +60,59 @@ tree = (((1, 2), 3), (4, (5, 6)), 7, (8, 9, 10))
 print(tree_ref(tree, (3, 1)))
 print(tree_ref(tree, (1, 1, 1)))
 print(tree_ref(tree, (0,)))
+
+
+--------------------
+# Symbolic algebra #
+--------------------
+
+# algebra.py. 
+# do_multiply
+
+-------------------------------------------------------------------------
+
+def do_multiply(expr1, expr2):
+    """
+    You have two Expressions, and you need to make a simplified expression
+    representing their product. They are guaranteed to be of type Expression
+    -- that is, either Sums or Products -- by the multiply() function that
+    calls this one.
+
+    So, you have four cases to deal with:
+    * expr1 is a Sum, and expr2 is a Sum
+    * expr1 is a Sum, and expr2 is a Product
+    * expr1 is a Product, and expr2 is a Sum
+    * expr1 is a Product, and expr2 is a Product
+
+    You need to create Sums or Products that represent what you get by
+    applying the algebraic rules of multiplication to these expressions,
+    and simplifying.
+
+    Look above for details on the Sum and Product classes. The Python operator
+    '*' will not help you.
+    """
+result = []
+    if isinstance(expr1,Sum) and isinstance(expr2,Sum):
+        for elem1 in expr1:
+            for elem2 in expr2:
+                result.append(Product([elem1,elem2]).simplify())
+        return Sum(result).simplify()
+    
+    elif isinstance(expr1,Sum) and isinstance(expr2,Product):
+        for elem in expr1:
+            result.append(Product([elem,expr2]).simplify())
+        return Sum(result).simplify()
+    
+    elif isinstance(expr1,Product) and isinstance(expr2,Sum):
+        for elem in expr2:
+            result.append(Product([elem,expr1]).simplify())
+        return Sum(result).simplify()
+    
+    elif isinstance(expr1,Product) and isinstance(expr2,Product):
+        for elem in expr1:
+            result.append(elem)
+        for elem in expr2:
+            result.append(elem)
+        return Product(result)
+    
+    
