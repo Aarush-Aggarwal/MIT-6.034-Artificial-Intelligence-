@@ -134,3 +134,7 @@ print(remove_from_string("6.034", "46"))
 
 --------------------------------------------------------------------------------------------------------------------------------------------------
 
+def tally_letters(string):
+    return { key: string.count(key) for k in string }
+
+print(tally_letters("hello"))
