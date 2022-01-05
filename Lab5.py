@@ -60,21 +60,28 @@ def branch_disorder(data, target_classifier):
 def average_test_disorder(data, test_classifier, target_classifier):
     dic = split_on_classifier(data, test_classifier) 
     from collections import defaultdict
-    new_dic = defaultdict(list)
-    for key, value in dic.items():
-        new_dic[key].extend([len(value), branch_disorder(value, target_classifier)])
+    new_dict = defaultdict(list)
+    for feature, points in dic.items():
+        new_dict[feature].extend([len(points), branch_disorder(points, target_classifier)])
     
     avg_disorder = 0.0
-    
-    for k, v in new_dic.items():
+    for v in new_dict.values():
         avg_disorder += (v[0]/len(data)) * v[1]
     
-    print(avg_disorder)
-    
-average_test_disorder(ball_data, api.feature_test("size"), ball_type_classifier)
+    return(avg_disorder)
 
 ##################################
 # Part 1D: Constructing an ID Tree
 ##################################
 
-# def find_best_classifier(data, possible_classifiers, target_classifier):
+def find_best_classifier(data, possible_classifiers, target_classifier):
+    test_disorders = {}
+    for classifier in possible_classifiers:
+        test_disorders[classifier] = average_test_disorder(data, classifier, target_classifier)
+    
+    best_classifier = min(test_disorders, key=test_disorders.get)
+    min_dict = split_on_classifier(data, best_classifier)
+    if len(min_dict.keys()) == 1:
+        raise api.NoGoodClassifiersError("the classifier has only one branch") 
+    
+    return best_classifier
