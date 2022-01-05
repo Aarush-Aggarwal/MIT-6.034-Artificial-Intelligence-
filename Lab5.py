@@ -20,13 +20,12 @@ def id_tree_classify_point(point, id_tree):
 ###########################################
 
 def split_on_classifier(data, classifier):
-    dic = {}
+    from collections import defaultdict
+    dic = defaultdict(list)
     counter = 0
     for point in data:
-        dic[classifier.classify(point)] = [] + [point]
+        dic[classifier.classify(point)].extend([point])
     return dic
-
-split_on_classifier(data.angel_data, api.feature_test("Shape"))
 
 ###############################
 # Part 1C: Calculating Disorder
@@ -42,25 +41,37 @@ ball_data = [ball1, ball2, ball3, ball4, ball5]
 ball_type_classifier = api.feature_test("type")
 
 def branch_disorder(data, target_classifier):
-    from collections import Counter
-    values = []
-    n_b = len(data)
-    
-    for datum in data:
-        if target_classifier in datum.keys():
-            values.append(datum[target_classifier])
+    dic = {}
+    for point in data:
+        classification = target_classifier.classify(point)
+        if classification not in dic.keys():
+            dic[classification] = 1
         else:
-            raise api.ClassifierError("Target Classifier not in Data Set")
-        
-    for n_bc in Counter(values).values:
-        disorder = float(disorder + n_bc/n_b * log2(n_bc/n_b))
+            dic[classification] += 1
+    
+    disorder = 0.0
+    n_b = len(data)
+    for n_bc in dic.values():
+        disorder += float((n_bc/n_b) * log2(n_bc/n_b))
             
-    return -1.0 * disorder
+    return(-1.0 * disorder)
 
-branch_disorder([ball3, ball4, ball5], ball_type_classifier)
 
 def average_test_disorder(data, test_classifier, target_classifier):
-    pass
+    dic = split_on_classifier(data, test_classifier) 
+    from collections import defaultdict
+    new_dic = defaultdict(list)
+    for key, value in dic.items():
+        new_dic[key].extend([len(value), branch_disorder(value, target_classifier)])
+    
+    avg_disorder = 0.0
+    
+    for k, v in new_dic.items():
+        avg_disorder += (v[0]/len(data)) * v[1]
+    
+    print(avg_disorder)
+    
+average_test_disorder(ball_data, api.feature_test("size"), ball_type_classifier)
 
 ##################################
 # Part 1D: Constructing an ID Tree
