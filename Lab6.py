@@ -53,7 +53,6 @@ def forward_prop(net, input_values, threshold_fn=stairstep):
 ##############################
 
 # Gradient ascent
-
 def gradient_ascent_step(func, inputs, step_size):
     from collections import defaultdict
     outputs = defaultdict(list)
@@ -64,8 +63,8 @@ def gradient_ascent_step(func, inputs, step_size):
     max_func, var_list = max(outputs.items())
     return (max_func, var_list)
 
-# Back prop dependencies
 
+# Back prop dependencies
 def get_back_prop_dependencies(net, wire):
     dependencies = set()
     dependencies.add(wire)
@@ -80,3 +79,44 @@ def get_back_prop_dependencies(net, wire):
     
     return dependencies
 
+
+# Basic back propagation
+
+# Computing δB
+def calculate_deltas(net, desired_output, neuron_outputs):
+    _dict = {}
+    graph = net.topological_sort()
+    graph.reverse()
+    for neuron in graph:
+        if net.is_output_neuron(neuron):
+            delta_val = neuron_outputs[neuron] * (1 - neuron_outputs[neuron]) * (desired_output - neuron_outputs[neuron])
+        else:
+            summation = 0
+            for out_neighbor in net.get_outgoing_neighbors(neuron):
+                wire = net.get_wire(neuron, out_neighbor)
+                summation += ( wire.get_weight() * _dict[neuron] )
+                delta_val = neuron_outputs[neuron] * (1 - neuron_outputs[neuron]) * summation
+        _dict[neuron] = delta_val     
+    
+    return _dict
+
+# Updating weights
+def update_weights(net, input_values, desired_output, neuron_outputs, r=1):
+    _dict = calculate_deltas(net, desired_output, neuron_outputs)
+    for wire in net._get_wires():
+        delta_val = _dict[wire.endNode]
+        delta_w = r * node_value[wire.startNode, input_values, neuron_outputs] * delta_val
+        new_weight = wire.get_weight() + delta_w
+        wire.set_weight(new_weight)
+        
+    return net
+
+def back_prop(net, input_values, desired_output, r=1, minimum_accuracy=-0.001):
+    num_iterations = 0
+    calc_output, neuron_outputs = forward_prop(net, input_values, sigmoid)
+    while accuracy(desired_output, calc_output) < minimum_accuracy:
+        net = update_weights(net, input_values, desired_output, neuron_outputs, r)
+        num_iterations += 1
+        calc_output, neuron_outputs = forward_prop(net, input_values, sigmoid)
+    
+    return (net, num_iterations)
