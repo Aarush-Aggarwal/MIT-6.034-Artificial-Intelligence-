@@ -1,3 +1,4 @@
+from collections import defaultdict
 from nn_problems import *
 from math import e
 INF = float('inf')
@@ -36,7 +37,7 @@ def node_value(node, input_values, neuron_outputs):
         return input_values[node] if node in input_values else neuron_outputs[node]
     return node  # constant input, such as -1
 
-def forward_prop(net=nn_basic, input_values=nn_basic_inputs, threshold_fn=stairstep):
+def forward_prop(net, input_values, threshold_fn=stairstep):
     neuron_outputs = {}
     for neuron in net.topological_sort():
         weighted_sum = 0 
@@ -54,4 +55,28 @@ def forward_prop(net=nn_basic, input_values=nn_basic_inputs, threshold_fn=stairs
 # Gradient ascent
 
 def gradient_ascent_step(func, inputs, step_size):
-    pass
+    from collections import defaultdict
+    outputs = defaultdict(list)
+    for input1 in inputs:
+        for input2 in inputs:
+            for input3 in inputs:
+                outputs[func(input1, input2, input3)].append([input1, input2, input3])
+    max_func, var_list = max(outputs.items())
+    return (max_func, var_list)
+
+# Back prop dependencies
+
+def get_back_prop_dependencies(net, wire):
+    dependencies = set()
+    dependencies.add(wire)
+    dependencies.add(wire.startNode)
+    dependencies.add(wire.endNode)
+    
+    for out_neighbor in net.get_outgoing_neighbors(wire.endNode):
+        dependencies.add(out_neighbor)
+        wires = net._get_wires(wire.endNode,out_neighbor)
+        for w in wires:
+            dependencies.add(get_back_prop_dependencies(net, w))
+    
+    return dependencies
+
