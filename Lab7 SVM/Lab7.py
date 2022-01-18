@@ -59,11 +59,11 @@ def check_alpha_signs(svm):
 
 def check_alpha_equations(svm):
     summation1 = 0 
-    summation2 = 0
+    summation2 = [0] * len(svm.training_points[0])
     
     for point in svm.support_vectors:
         summation1 += point.classification * point.alpha
-        summation2 = scalar_multiply(point.classification*point.alpha, point.coords)
+        summation2 = vector_add(scalar_multiply(point.classification*point.alpha, point.coords), summation2)
         
     if summation1 != 0 or svm.w != summation2:
         return False
@@ -84,4 +84,24 @@ def misclassified_training_points(svm):
 ###########################################
 
 def update_svm_from_alphas(svm):
+    b = []
+    support_vec = [] 
+    for point in svm.training_points:
+        if point.alpha > 0:
+            support_vec.append(point)
     
+    for point in support_vec:
+        summation = vector_add(scalar_multiply(point.classification*point.alpha, point.coords), summation)
+    
+    svm.w = summation
+    
+    for point in support_vec:
+        b.append( point.classification - dot_product(svm.w, point.coords) )
+    
+    svm.b = (max(b) + min(b)) / 2
+    
+    svm.support_vectors = support_vec
+    
+    svm.set_boundary(svm.w, svm.b)
+    
+    return svm
